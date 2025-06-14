@@ -122,8 +122,8 @@ public class EthanApiPlugin extends Plugin {
         if (npc == null) {
             return -1;
         }
-        if(animationField ==null|| animationMult ==0){
-            Field[] fields = Arrays.stream(npc.getClass().getSuperclass().getDeclaredFields()).filter(x->x.getType()==int.class&&!Modifier.isFinal(x.getModifiers())&&!Modifier.isStatic(x.getModifiers())).toArray(Field[]::new);
+        if (animationField == null || animationMult == 0) {
+            Field[] fields = Arrays.stream(npc.getClass().getSuperclass().getDeclaredFields()).filter(x -> x.getType() == int.class && !Modifier.isFinal(x.getModifiers()) && !Modifier.isStatic(x.getModifiers())).toArray(Field[]::new);
             boolean[] changed = new boolean[fields.length];
             int[] values = new int[fields.length];
             for (int i = 0; i < fields.length; i++) {
@@ -135,15 +135,15 @@ public class EthanApiPlugin extends Plugin {
             for (int i = 0; i < 5; i++) {
                 npc.setAnimation(rand.nextInt(Integer.MAX_VALUE));
                 for (int i1 = 0; i1 < values.length; i1++) {
-                    if(values[i1]!=fields[i1].getInt(npc)){
+                    if (values[i1] != fields[i1].getInt(npc)) {
                         changed[i1] = true;
                     }
                 }
             }
             int animationFieldIndex = -1;
             for (int i = 0; i < changed.length; i++) {
-                if(changed[i]){
-                    if(animationFieldIndex!=-1){
+                if (changed[i]) {
+                    if (animationFieldIndex != -1) {
                         System.out.println("too many changed");
                         return -1;
                     }
@@ -151,7 +151,7 @@ public class EthanApiPlugin extends Plugin {
                 }
             }
             String fieldName = fields[animationFieldIndex].getName();
-            fields[animationFieldIndex].setInt(npc,1);
+            fields[animationFieldIndex].setInt(npc, 1);
             long multiplier = npc.getAnimation();
             for (Field field : fields) {
                 field.setAccessible(false);
@@ -167,12 +167,12 @@ public class EthanApiPlugin extends Plugin {
     }
 
     public static HeadIcon headIconThruLengthEightArrays(NPC npc) throws IllegalAccessException {
-        Class<?>[] trying = new Class<?>[]{npc.getClass(),npc.getComposition().getClass()};
+        Class<?>[] trying = new Class<?>[]{npc.getClass(), npc.getComposition().getClass()};
         for (Class<?> aClass : trying) {
             for (Field declaredField : aClass.getDeclaredFields()) {
                 Field[] decFields = declaredField.getType().getDeclaredFields();
-                if(decFields.length==2){
-                    if(decFields[0].getType().isArray()&&decFields[1].getType().isArray()){
+                if (decFields.length == 2) {
+                    if (decFields[0].getType().isArray() && decFields[1].getType().isArray()) {
                         for (Field decField : decFields) {
                             decField.setAccessible(true);
                         }
@@ -181,17 +181,17 @@ public class EthanApiPlugin extends Plugin {
                         for (Field decField : decFields) {
                             decField.setAccessible(false);
                         }
-                        if(array1.length==8&array2.length==8){
-                            if(decFields[0].getType()==short[].class){
-                                if((short)array1[0]==-1){
+                        if (array1.length == 8 & array2.length == 8) {
+                            if (decFields[0].getType() == short[].class) {
+                                if ((short) array1[0] == -1) {
                                     return null;
                                 }
-                                return HeadIcon.values()[(short)array1[0]];
+                                return HeadIcon.values()[(short) array1[0]];
                             }
-                            if((short)array2[0]==-1){
+                            if ((short) array2[0] == -1) {
                                 return null;
                             }
-                            return HeadIcon.values()[(short)array2[0]];
+                            return HeadIcon.values()[(short) array2[0]];
                         }
                     }
                 }
@@ -202,14 +202,14 @@ public class EthanApiPlugin extends Plugin {
 
     @SneakyThrows
     public static HeadIcon getHeadIcon(NPC npc) {
-        if(npc==null) return null;
+        if (npc == null) return null;
         HeadIcon icon = getOldHeadIcon(npc);
-        if(icon!=null){
+        if (icon != null) {
             //System.out.println("Icon returned using oldHeadIcon");
             return icon;
         }
         icon = getOlderHeadicon(npc);
-        if(icon!=null){
+        if (icon != null) {
             //System.out.println("Icon returned using OlderHeadicon");
             return icon;
         }
@@ -219,7 +219,7 @@ public class EthanApiPlugin extends Plugin {
     }
 
     @SneakyThrows
-    public static HeadIcon getOlderHeadicon(NPC npc){
+    public static HeadIcon getOlderHeadicon(NPC npc) {
         Method getHeadIconMethod = null;
         for (Method declaredMethod : npc.getComposition().getClass().getDeclaredMethods()) {
             if (declaredMethod.getName().length() == 2 && declaredMethod.getReturnType() == short.class && declaredMethod.getParameterCount() == 1) {
@@ -228,7 +228,7 @@ public class EthanApiPlugin extends Plugin {
                 short headIcon = -1;
                 try {
                     headIcon = (short) getHeadIconMethod.invoke(npc.getComposition(), 0);
-                }catch (Exception e){
+                } catch (Exception e) {
                     //nothing
                 }
                 getHeadIconMethod.setAccessible(false);
@@ -436,6 +436,12 @@ public class EthanApiPlugin extends Plugin {
     public static boolean isMoving() {
         return client.getLocalPlayer().getPoseAnimation()
                 != client.getLocalPlayer().getIdlePoseAnimation();
+    }
+
+    public static boolean isWalking(Actor actor) {
+        WorldPoint serverLocation = actor.getWorldLocation();
+        WorldPoint clientLocation = WorldPoint.fromLocal(client, actor.getLocalLocation());
+        return !serverLocation.equals(clientLocation);
     }
 
     @Deprecated
